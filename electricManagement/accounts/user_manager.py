@@ -121,14 +121,14 @@ def update_user(request):
         username = request.user.username
         user = User.objects.get(username=username)
         payload = json.loads(request.body.decode())
-        villageId, blockId, districtId, roleId = get_reference_model_object(payload, user)
+        roleId = get_reference_model_object(payload, user)
         clean_user_payload_data(payload)
         if 'username' in payload : del payload['username']
         User.objects.filter(id=payload['id']).update(roleId=roleId, **payload)
         result = UserSerializer(User.objects.get(id= payload['id'])).data
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({"errMessage":str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['DELETE'])
