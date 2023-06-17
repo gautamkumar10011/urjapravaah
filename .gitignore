@@ -1,0 +1,6 @@
+*.pyc
+*/*/__pycache__
+sajag/sajagapp/zend_misc/__pycache__
+sajag/sajagapp/village/__pycache__
+sajagapp/state/__pycache__
+db.sqlite3
