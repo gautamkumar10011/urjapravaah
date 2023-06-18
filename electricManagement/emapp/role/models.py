@@ -32,6 +32,10 @@ class UserRoleModel(models.Model):
     createdBy = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.SET_NULL, null=True, blank=True)
     createdAt = models.DateTimeField(auto_now_add = True)
     updatedAt = models.DateTimeField(auto_now_add = True)
+    feeder = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='feeder', null=True, blank=True) 
+    station = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='control_panel', null=True, blank=True)
+    feederStation = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='control_panel', null=True, blank=True)
+    control_panel = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='control_panel', null=True, blank=True)
     views = models.JSONField(blank=True, null=True)
 
     class Meta:

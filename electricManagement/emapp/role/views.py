@@ -65,6 +65,9 @@ def create_role(request):
         createdBy=createdBy,
         createdAt=payload['createdAt'],
         updatedAt=payload['updatedAt'],
+        feeder=CRUDModel.objects.get(value=payload['feeder']),
+        station=CRUDModel.objects.get(value=payload['station']),
+        feederStation=CRUDModel.objects.get(value=payload['feederStation']),
         control_panel=CRUDModel.objects.get(value=payload['control_panel']))
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=saved_data.seq_num)).data
         return Response(result, status=status.HTTP_200_OK)  
@@ -88,6 +91,9 @@ def update_role(request):
         createdBy=createdBy,
         createdAt=payload['createdAt'],
         updatedAt=payload['updatedAt'],
+        feeder=CRUDModel.objects.get(value=payload['feeder']),
+        station=CRUDModel.objects.get(value=payload['station']),
+        feederStation=CRUDModel.objects.get(value=payload['feederStation']),        
         control_panel=CRUDModel.objects.get(value=payload['control_panel']))        
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK) 
