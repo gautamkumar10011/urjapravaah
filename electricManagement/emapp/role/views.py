@@ -38,8 +38,7 @@ def get_role(request):
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=role_id)).data
         return Response(result, status=status.HTTP_200_OK)    
     except Exception as e:
-        Error_Message.objects.create(err_message="get_role : " + str(e))
-        return Response(status=status.HTTP_404_NOT_FOUND)             
+        return Response({"errMessage": str(e) },status=status.HTTP_404_NOT_FOUND)             
 
 
 @api_view(['GET'])
@@ -70,7 +69,8 @@ def create_role(request):
         feeder=CRUDModel.objects.get(value=payload['feeder']),
         station=CRUDModel.objects.get(value=payload['station']),
         schedule=CRUDModel.objects.get(value=payload['schedule']),
-        role=CRUDModel.objects.get(value=payload['role']))
+        role=CRUDModel.objects.get(value=payload['role']),
+        urjauser=CRUDModel.objects.get(value=payload['urjauser']))
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=saved_data.seq_num)).data
         return Response(result, status=status.HTTP_200_OK)  
     except Exception as e:
@@ -95,7 +95,8 @@ def update_role(request):
         feeder=CRUDModel.objects.get(value=payload['feeder']),
         station=CRUDModel.objects.get(value=payload['station']),
         schedule=CRUDModel.objects.get(value=payload['schedule']),
-        role=CRUDModel.objects.get(value=payload['role']))        
+        role=CRUDModel.objects.get(value=payload['role']),
+        urjauser=CRUDModel.objects.get(value=payload['urjauser']))        
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK) 
     except Exception as e:

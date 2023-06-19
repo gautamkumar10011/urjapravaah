@@ -36,6 +36,7 @@ class UserRoleModel(models.Model):
     station = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='station', null=True, blank=True)
     schedule = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='schedule', null=True, blank=True)
     role = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='role', null=True, blank=True)
+    urjauser = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='urjauser', null=True, blank=True)
     views = models.JSONField(blank=True, null=True)
 
     class Meta:
