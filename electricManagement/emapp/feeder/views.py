@@ -18,6 +18,7 @@ from accounts.models import User
 from emapp.feeder.models import FeederModel
 from emapp.feeder.serializers import FeederSerializer
 from emapp.role import ROLE
+from emapp.station.models import StationModel
 
 
 @api_view(['GET'])
@@ -54,7 +55,16 @@ def create_feeder(request):
         username = request.user.username
         user = User.objects.get(username=username)
         payload = json.loads(request.body.decode())
-        saved_data = FeederModel.objects.create(createdBy=user, **payload)
+        assigned_to = payload['assignedTo']
+        assignedTo = None
+        if User.objects.filter(id=assigned_to).exists():
+            assignedTo = User.objects.get(id=assigned_to)
+        del payload['assignedTo'] 
+        stationId = None
+        if StationModel.objects.filter(seq_num=payload['stationId']).exists():
+            stationId =StationModel.objects.get(seq_num=payload['stationId'])
+        del payload['stationId']                 
+        saved_data = FeederModel.objects.create(createdBy=user, assignedTo=assignedTo, stationId=stationId, **payload)
         result = FeederSerializer(FeederModel.objects.get(seq_num=saved_data.seq_num)).data
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
@@ -69,7 +79,16 @@ def update_feeder(request):
         # return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         payload = json.loads(request.body.decode())
-        FeederModel.objects.filter(seq_num=payload['seq_num']).update(**payload)
+        assigned_to = payload['assignedTo']
+        assignedTo = None
+        if User.objects.filter(id=assigned_to).exists():
+            assignedTo = User.objects.get(id=assigned_to)
+        del payload['assignedTo']
+        stationId = None
+        if StationModel.objects.filter(seq_num=payload['stationId']).exists():
+            stationId =StationModel.objects.get(seq_num=payload['stationId'])
+        del payload['stationId']                 
+        FeederModel.objects.filter(seq_num=payload['seq_num']).update(assignedTo=assignedTo, **payload)
         result = FeederSerializer(FeederModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
