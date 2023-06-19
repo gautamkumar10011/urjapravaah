@@ -43,6 +43,22 @@ def web_login(request):
 
 @api_view(["POST"])
 @permission_classes((AllowAny,))
+def is_already_exist(request):
+    try:
+        data = json.loads(request.body.decode())
+        if 'phone' in data:  
+            phone = data['phone']
+            if User.objects.filter(username=phone).exists():
+                return Response({"status":True}, status=status.HTTP_200_OK)
+            else:
+                return Response({"status":False}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(status=HTTP_400_BAD_REQUEST )
+    except Exception as e: 
+        return Response({"errMessage": str(e)}, status=HTTP_400_BAD_REQUEST )
+
+
+@api_view(["POST"])
+@permission_classes((AllowAny,))
 def login_me(request):
     try:
         login_data = json.loads(request.body.decode())
