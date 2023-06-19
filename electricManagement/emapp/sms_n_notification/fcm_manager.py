@@ -2,7 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, messaging , auth
 from accounts.models import User
 
-cred = credentials.Certificate("D:\\BHEL\\Urjapravaah\\electricManagement\\emapp\\sms_n_notification\\serviceAccountKey.json")
+cred = credentials.Certificate("D:/BHEL/Urjapravaah/electricManagement/emapp/sms_n_notification/serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 

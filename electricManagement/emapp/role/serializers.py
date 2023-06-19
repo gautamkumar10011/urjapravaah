@@ -21,10 +21,25 @@ OPERATION_DICT = {"None":0,
 
 
 class UserRoleSerializer(serializers.ModelSerializer):
-	control_panel = serializers.SerializerMethodField('get_control_panel')
-	def get_control_panel(self, obj):
-		if obj.control_panel:
-			return OPERATION_DICT[obj.control_panel.operations]
+	feeder = serializers.SerializerMethodField('get_feeder')
+	def get_feeder(self, obj):
+		if obj.feeder:
+			return OPERATION_DICT[obj.feeder.operations]
+		return NONE	
+	station = serializers.SerializerMethodField('get_station')
+	def get_station(self, obj):
+		if obj.station:
+			return OPERATION_DICT[obj.station.operations]
+		return NONE
+	schedule = serializers.SerializerMethodField('get_schedule')
+	def get_schedule(self, obj):
+		if obj.schedule:
+			return OPERATION_DICT[obj.schedule.operations]
+		return NONE			
+	role = serializers.SerializerMethodField('get_role')
+	def get_role(self, obj):
+		if obj.role:
+			return OPERATION_DICT[obj.role.operations]
 		return NONE		
 
 	class Meta:
@@ -34,7 +49,10 @@ class UserRoleSerializer(serializers.ModelSerializer):
 					"createdBy",
 					"createdAt",
 					"updatedAt",
-					"control_panel")
+					"feeder",
+					"station",
+					"schedule",
+					"role")
 
 class CRUDSerializer(serializers.ModelSerializer):
 	class Meta:
