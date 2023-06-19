@@ -25,8 +25,8 @@ from emapp.station.models import StationModel
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def get_feeder(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_READ, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_FEEDER, ROLE.KEY_READ, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         feeder_id =  request.GET['seq_num']
         result = FeederSerializer(FeederModel.objects.get(seq_num=feeder_id)).data
@@ -39,8 +39,8 @@ def get_feeder(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def get_feeders(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_READ, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_FEEDER, ROLE.KEY_READ, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     result = FeederSerializer(FeederModel.objects.all(),many=True).data
     return Response(result, status=status.HTTP_200_OK)
 
@@ -49,8 +49,8 @@ def get_feeders(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def create_feeder(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_CREATE, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_FEEDER, ROLE.KEY_CREATE, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         username = request.user.username
         user = User.objects.get(username=username)
@@ -75,8 +75,8 @@ def create_feeder(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def update_feeder(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_UPDATE, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_FEEDER, ROLE.KEY_UPDATE, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         payload = json.loads(request.body.decode())
         assigned_to = payload['assignedTo']
@@ -99,8 +99,8 @@ def update_feeder(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def delete_feeder(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_DELETE, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_FEEDER, ROLE.KEY_DELETE, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         seq_num = request.GET['seq_num']
         FeederModel.objects.filter(seq_num=seq_num).delete()

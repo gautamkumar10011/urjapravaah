@@ -40,7 +40,12 @@ class UserRoleSerializer(serializers.ModelSerializer):
 	def get_role(self, obj):
 		if obj.role:
 			return OPERATION_DICT[obj.role.operations]
-		return NONE		
+		return NONE	
+	urjauser = serializers.SerializerMethodField('get_urjauser')
+	def get_urjauser(self, obj):
+		if obj.urjauser:
+			return OPERATION_DICT[obj.urjauser.operations]
+		return NONE				
 
 	class Meta:
 		model = UserRoleModel
@@ -52,7 +57,8 @@ class UserRoleSerializer(serializers.ModelSerializer):
 					"feeder",
 					"station",
 					"schedule",
-					"role")
+					"role",
+					"urjauser")
 
 class CRUDSerializer(serializers.ModelSerializer):
 	class Meta:
