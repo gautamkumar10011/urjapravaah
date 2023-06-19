@@ -23,9 +23,24 @@ from accounts.serializers import UserSerializer
 from emapp.role.models import UserRoleModel
 from emapp.role.serializers import UserRoleSerializer
 from emapp.sms_n_notification.fcm_manager import is_valid_firebase_auth_id_token
-from django.views.decorators.csrf import csrf_exempt
 
-#@csrf_exempt
+
+@api_view(["POST"])
+@permission_classes((AllowAny,))
+def web_login(request):
+    login_data = json.loads(request.body.decode())
+    user, username= None, None
+    if 'username' in login_data and 'password' in login_data :
+        username, password = login_data["username"], login_data["password"]
+        user = authenticate(username=username, password=password)
+    else :
+        return Response({'error': 'Invalid Login request.'}, status=HTTP_400_BAD_REQUEST)
+    if not user:
+        return Response({'error': "Invalid Credentials"}, status=HTTP_404_NOT_FOUND)
+    username = user.username
+    return user_profile(username)
+
+
 @api_view(["POST"])
 @permission_classes((AllowAny,))
 def login_me(request):

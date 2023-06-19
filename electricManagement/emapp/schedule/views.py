@@ -69,10 +69,8 @@ def update_schedule(request):
         # return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         payload = json.loads(request.body.decode())
-        created_by = payload['createdBy']
-        createdBy = User.objects.get(id=created_by)
-        del payload['createdBy']
-        ScheduleModel.objects.filter(seq_num=payload['seq_num']).update(createdBy=createdBy, **payload)
+        if 'createdBy' in payload: del payload['createdBy']
+        ScheduleModel.objects.filter(seq_num=payload['seq_num']).update(**payload)
         result = ScheduleSerializer(ScheduleModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
@@ -91,3 +89,25 @@ def delete_schedule(request):
         return Response(status=status.HTTP_204_NO_CONTENT)
     except Exception as e:
         return Response({"errMessage": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
+@permission_classes([IsAuthenticated])
+def get_schedule_by_date(request):
+    dateOn = request.GET.get('dateOn')
+    result = ScheduleModel.objects.filter(dateOn=dateOn)
+    finalResult = ScheduleSerializer(result, many=True).data
+    return Response(finalResult, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
+@permission_classes([IsAuthenticated])
+def get_schedule_date_range(request):
+    dateFrom = request.GET.get('dateFrom')
+    dateTo = request.GET.get('dateTo')
+    result = ScheduleModel.objects.filter(dateOn__range=[dateFrom,dateTo])
+    finalResult = ScheduleSerializer(result, many=True).data
+    return Response(finalResult, status=status.HTTP_200_OK)
