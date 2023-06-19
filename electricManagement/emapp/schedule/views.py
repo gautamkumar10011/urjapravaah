@@ -24,8 +24,8 @@ from emapp.role import ROLE
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def get_schedule(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_READ, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULLE, ROLE.KEY_READ, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         seq_num =  request.GET['seq_num']
         result = ScheduleSerializer(ScheduleModel.objects.get(seq_num=seq_num)).data
@@ -38,8 +38,8 @@ def get_schedule(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def get_schedules(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_READ, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULLE, ROLE.KEY_READ, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     result = ScheduleSerializer(ScheduleModel.objects.all(),many=True).data
     return Response(result, status=status.HTTP_200_OK)
 
@@ -48,8 +48,8 @@ def get_schedules(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def create_schedule(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_CREATE, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULLE, ROLE.KEY_CREATE, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         username = request.user.username
         user = User.objects.get(username=username)
@@ -65,8 +65,8 @@ def create_schedule(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def update_schedule(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_UPDATE, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULLE, ROLE.KEY_UPDATE, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         payload = json.loads(request.body.decode())
         if 'createdBy' in payload: del payload['createdBy']
@@ -81,8 +81,8 @@ def update_schedule(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def delete_schedule(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_DELETE, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULLE, ROLE.KEY_DELETE, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         seq_num = request.GET['seq_num']
         ScheduleModel.objects.filter(seq_num=seq_num).delete()

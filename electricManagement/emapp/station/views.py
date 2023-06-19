@@ -24,8 +24,8 @@ from emapp.role import ROLE
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def get_station(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_READ, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_STATION, ROLE.KEY_READ, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         seq_num =  request.GET['seq_num']
         result = StationSerializer(StationModel.objects.get(seq_num=seq_num)).data
@@ -38,8 +38,8 @@ def get_station(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def get_stations(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_READ, request.user.username):
-        # return Respnse(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_STATION, ROLE.KEY_READ, request.user.username):
+        return Respnse(status=status.HTTP_401_UNAUTHORIZED)
     result = StationSerializer(StationModel.objects.all(),many=True).data
     return Response(result, status=status.HTTP_200_OK)
 
@@ -48,8 +48,8 @@ def get_stations(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def create_station(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_CREATE, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_STATION, ROLE.KEY_CREATE, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         username = request.user.username
         user = User.objects.get(username=username)
@@ -70,8 +70,8 @@ def create_station(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def update_station(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_UPDATE, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_STATION, ROLE.KEY_UPDATE, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         payload = json.loads(request.body.decode())
         assigned_to = payload['assignedTo']
@@ -90,8 +90,8 @@ def update_station(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def delete_station(request):
-    # if not ROLE.isValidOperation(ROLE.KEY_STATE, ROLE.KEY_DELETE, request.user.username):
-        # return Response(status=status.HTTP_401_UNAUTHORIZED)
+    if not ROLE.isValidOperation(ROLE.KEY_STATION, ROLE.KEY_DELETE, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         seq_num = request.GET['seq_num']
         StationModel.objects.filter(seq_num=seq_num).delete()
