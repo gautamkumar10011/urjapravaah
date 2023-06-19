@@ -22,6 +22,9 @@ from .serializers import CRUDSerializer
 from emapp.role import ROLE
 from emapp.role.models import ComponetName
 from emapp.role.serializers import ComponetNameSerializer
+from datetime import datetime
+CRUD_BINARY = ["0000","0001","0010","0011","0100","0101","0110","0111","1000","1001","1010","1011","1100","1101","1110","1111"]
+
 
 
 @api_view(['GET'])
@@ -60,19 +63,17 @@ def create_role(request):
         createdBy = User.objects.get(username=username)
         payload = json.loads(request.body.decode())
         if 'seq_num' in payload: del payload['seq_num']
-        del payload['createdBy']
         saved_data = UserRoleModel.objects.create(name=payload['name'], 
         createdBy=createdBy,
-        createdAt=payload['createdAt'],
-        updatedAt=payload['updatedAt'],
+        createdAt=datetime.now(),
+        updatedAt=datetime.now(),
         feeder=CRUDModel.objects.get(value=payload['feeder']),
         station=CRUDModel.objects.get(value=payload['station']),
-        feederStation=CRUDModel.objects.get(value=payload['feederStation']),
-        control_panel=CRUDModel.objects.get(value=payload['control_panel']))
+        schedule=CRUDModel.objects.get(value=payload['schedule']),
+        role=CRUDModel.objects.get(value=payload['role']))
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=saved_data.seq_num)).data
         return Response(result, status=status.HTTP_200_OK)  
     except Exception as e:
-        Error_Message.objects.create(err_message="create_role : " + str(e))
         return Response({"Exception": str(e)},status=status.HTTP_400_BAD_REQUEST)    
 
 
@@ -90,16 +91,15 @@ def update_role(request):
         UserRoleModel.objects.filter(seq_num=payload['seq_num']).update(name=payload['name'], 
         createdBy=createdBy,
         createdAt=payload['createdAt'],
-        updatedAt=payload['updatedAt'],
+        updatedAt=datetime.now(),
         feeder=CRUDModel.objects.get(value=payload['feeder']),
         station=CRUDModel.objects.get(value=payload['station']),
-        feederStation=CRUDModel.objects.get(value=payload['feederStation']),        
-        control_panel=CRUDModel.objects.get(value=payload['control_panel']))        
+        schedule=CRUDModel.objects.get(value=payload['schedule']),
+        role=CRUDModel.objects.get(value=payload['role']))        
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK) 
     except Exception as e:
-        Error_Message.objects.create(err_message="update_role : " + str(e))
-        return Response(status=status.HTTP_400_BAD_REQUEST)     
+        return Response({"Exception": str(e)}, status=status.HTTP_400_BAD_REQUEST)     
 
 
 @api_view(['DELETE'])

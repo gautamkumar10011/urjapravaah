@@ -33,9 +33,9 @@ class UserRoleModel(models.Model):
     createdAt = models.DateTimeField(auto_now_add = True)
     updatedAt = models.DateTimeField(auto_now_add = True)
     feeder = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='feeder', null=True, blank=True) 
-    station = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='control_panel', null=True, blank=True)
-    feederStation = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='control_panel', null=True, blank=True)
-    control_panel = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='control_panel', null=True, blank=True)
+    station = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='station', null=True, blank=True)
+    schedule = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='schedule', null=True, blank=True)
+    role = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='role', null=True, blank=True)
     views = models.JSONField(blank=True, null=True)
 
     class Meta:

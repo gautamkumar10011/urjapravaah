@@ -1,14 +1,14 @@
 from accounts.models import User 
 
-KEY_CONTROL_PANEL = "control_panel"
+KEY_SCHEDULE = "schedule"
 KEY_FEEDER = "feeder"
 KEY_STATION = "station"
-KEY_FEEDER_STATION = "feederStation"
-
+KEY_ROLE = "role"
 KEY_READ   = "Read"
 KEY_CREATE = "Create"
 KEY_UPDATE = "Update"
 KEY_DELETE = "Delete"
+
 CREATE = 8
 READ   = 4
 UPDATE = 2
@@ -22,11 +22,11 @@ def isValidOperation(roleKey, opertationType, username):
     if KEY_FEEDER ==roleKey:
         return isUserAllowedForOperation(roleId.feeder, opertationType)
     elif KEY_STATION ==roleKey:
-        return isUserAllowedForOperation(roleId.station, opertationType)
-    elif KEY_FEEDER_STATION ==roleKey:
-        return isUserAllowedForOperation(roleId.feederStation, opertationType)                    
-    elif KEY_CONTROL_PANEL ==roleKey:
-        return isUserAllowedForOperation(roleId.control_panel, opertationType)
+        return isUserAllowedForOperation(roleId.station, opertationType)                  
+    elif KEY_SCHEDULE ==roleKey:
+        return isUserAllowedForOperation(roleId.schdule, opertationType)
+    elif KEY_ROLE ==roleKey:
+        return isUserAllowedForOperation(roleId.role, opertationType)        
     else:
         return False    
 
