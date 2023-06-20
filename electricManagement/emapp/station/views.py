@@ -28,7 +28,12 @@ def get_station(request):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         seq_num =  request.GET['seq_num']
-        result = StationSerializer(StationModel.objects.get(seq_num=seq_num)).data
+        data = StationModel.objects.get(seq_num=seq_num)
+        result = StationSerializer(data).data
+        result['username'] = User.objects.get(id=result['createdBy']).username
+        result['assigned'] = None
+        if User.objects.filter(id=result['assignedTo']).exists():
+            result['assigned'] = User.objects.get(id=result['assignedTo']).username
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"errMessage":str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -40,7 +45,15 @@ def get_station(request):
 def get_stations(request):
     if not ROLE.isValidOperation(ROLE.KEY_STATION, ROLE.KEY_READ, request.user.username):
         return Respnse(status=status.HTTP_401_UNAUTHORIZED)
-    result = StationSerializer(StationModel.objects.all(),many=True).data
+    allRecords = StationModel.objects.all()
+    result = list()
+    for record in allRecords:
+        serialized_record = StationSerializer(record).data
+        serialized_record['username'] = User.objects.get(id = serialized_record['createdBy']).username
+        serialized_record['assigned'] = None
+        if User.objects.filter(id=serialized_record['assignedTo']).exists():
+            serialized_record['assigned'] = User.objects.get(id=serialized_record['assignedTo']).username        
+        result.append(serialized_record)
     return Response(result, status=status.HTTP_200_OK)
 
 
