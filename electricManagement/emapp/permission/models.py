@@ -5,8 +5,8 @@ from emapp.feeder.models import FeederModel
 
 
 class UserFeeder(models.Model):
-    feeder = models.ForeignKey(FeederModel, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
+    feederId = models.ForeignKey(FeederModel, on_delete=models.CASCADE)
+    userId = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
 
     def __str__(self):
-        return str(self.user) + "-" + str(self.device)
+        return str(self.userId) + "-" + str(self.feederId)
