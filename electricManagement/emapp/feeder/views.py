@@ -29,7 +29,15 @@ def get_feeder(request):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         feeder_id =  request.GET['seq_num']
-        result = FeederSerializer(FeederModel.objects.get(seq_num=feeder_id)).data
+        data = FeederModel.objects.get(seq_num=feeder_id)
+        result = FeederSerializer(data).data
+        result['station'] = None
+        if StationModel.objects.filter(seq_num=result['stationId']).exists():
+            result['station'] = StationModel.objects.get(seq_num=result['stationId']).name
+        result['username'] = User.objects.get(id=result['createdBy']).username
+        result['assigned'] = None
+        if User.objects.filter(id=result['assignedTo']).exists():
+            result['assigned'] = User.objects.get(id=result['assignedTo']).username
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"errMessage":str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -41,8 +49,19 @@ def get_feeder(request):
 def get_feeders(request):
     if not ROLE.isValidOperation(ROLE.KEY_FEEDER, ROLE.KEY_READ, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-    result = FeederSerializer(FeederModel.objects.all(),many=True).data
-    return Response(result, status=status.HTTP_200_OK)
+    allRecords = FeederModel.objects.all()
+    finalResult = list()
+    for record in allRecords:
+        result = FeederSerializer(record).data
+        result['station'] = None
+        if StationModel.objects.filter(seq_num=result['stationId']).exists():
+            result['station'] = StationModel.objects.get(seq_num=result['stationId']).name        
+        result['username'] = User.objects.get(id=result['createdBy']).username
+        result['assigned'] = None
+        if User.objects.filter(id=result['assignedTo']).exists():
+            result['assigned'] = User.objects.get(id=result['assignedTo']).username
+        finalResult.append(result)
+    return Response(finalResult, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

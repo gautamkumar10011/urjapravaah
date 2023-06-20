@@ -30,6 +30,7 @@ urlpatterns = [
     path("api/",include('accounts.urls')),
     path('users/', include('accounts.user_urls')),
     path('user/roles/', include('emapp.role.urls')),
+    path('api/', include('emapp.dashboard.urls')),
     path('feeder/', include('emapp.feeder.urls')),
     path('feeder/station/mappings/', include('emapp.feederStationMapping.urls')),
     path('schedules/', include('emapp.schedule.urls')),

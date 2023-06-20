@@ -58,7 +58,8 @@ class UserRoleSerializer(serializers.ModelSerializer):
 					"station",
 					"schedule",
 					"role",
-					"urjauser")
+					"urjauser",
+					"views")
 
 class CRUDSerializer(serializers.ModelSerializer):
 	class Meta:
