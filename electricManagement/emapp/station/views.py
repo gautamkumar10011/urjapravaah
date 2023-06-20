@@ -18,6 +18,8 @@ from accounts.models import User
 from emapp.station.models import StationModel
 from emapp.station.serializers import StationSerializer
 from emapp.role import ROLE
+from emapp.feeder.models import FeederModel
+from emapp.feeder.serializers import FeederSerializer
 
 
 @api_view(['GET'])
@@ -31,9 +33,26 @@ def get_station(request):
         data = StationModel.objects.get(seq_num=seq_num)
         result = StationSerializer(data).data
         result['username'] = User.objects.get(id=result['createdBy']).username
-        result['assigned'] = None
-        if User.objects.filter(id=result['assignedTo']).exists():
-            result['assigned'] = User.objects.get(id=result['assignedTo']).username
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"errMessage":str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
+@permission_classes([IsAuthenticated])
+def get_feeder_by_station_id(request):
+    if not ROLE.isValidOperation(ROLE.KEY_STATION, ROLE.KEY_READ, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+    try:
+        seq_num =  request.GET['seq_num']
+        records = FeederModel.objects.filter(stationId=seq_num)
+        result = list()
+        for record in records:
+            serialized_record = FeederSerializer(record).data
+            serialized_record['username'] = User.objects.get(id=serialized_record['createdBy']).username
+            serialized_record['station'] = StationModel.objects.get(seq_num=seq_num).name
+            result.append(serialized_record)
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"errMessage":str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -49,10 +68,7 @@ def get_stations(request):
     result = list()
     for record in allRecords:
         serialized_record = StationSerializer(record).data
-        serialized_record['username'] = User.objects.get(id = serialized_record['createdBy']).username
-        serialized_record['assigned'] = None
-        if User.objects.filter(id=serialized_record['assignedTo']).exists():
-            serialized_record['assigned'] = User.objects.get(id=serialized_record['assignedTo']).username        
+        serialized_record['username'] = User.objects.get(id = serialized_record['createdBy']).username       
         result.append(serialized_record)
     return Response(result, status=status.HTTP_200_OK)
 
@@ -67,12 +83,7 @@ def create_station(request):
         username = request.user.username
         user = User.objects.get(username=username)
         payload = json.loads(request.body.decode())
-        assigned_to = payload['assignedTo']
-        assignedTo = None
-        if User.objects.filter(id=assigned_to).exists():
-            assignedTo = User.objects.get(id=assigned_to)
-        del payload['assignedTo']
-        saved_data = StationModel.objects.create(createdBy=user, assignedTo=assignedTo, **payload)
+        saved_data = StationModel.objects.create(createdBy=user, **payload)
         result = StationSerializer(StationModel.objects.get(seq_num=saved_data.seq_num)).data
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
@@ -87,12 +98,7 @@ def update_station(request):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         payload = json.loads(request.body.decode())
-        assigned_to = payload['assignedTo']
-        assignedTo = None
-        if User.objects.filter(id=assigned_to).exists():
-            assignedTo = User.objects.get(id=assigned_to)
-        del payload['assignedTo']
-        StationModel.objects.filter(seq_num=payload['seq_num']).update(assignedTo=assignedTo,  **payload)
+        StationModel.objects.filter(seq_num=payload['seq_num']).update( **payload)
         result = StationSerializer(StationModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
