@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
-
+from emapp.feeder.models import FeederModel
 
 class ScheduleModel(models.Model):
     seq_num = models.AutoField(primary_key=True)
@@ -15,7 +15,7 @@ class ScheduleModel(models.Model):
     latitude = models.FloatField(default=0.0)
     longitude = models.FloatField(default=0.0)
     pic_url = models.CharField(max_length=5000)
-
+    feederId = models.ForeignKey(FeederModel, on_delete=models.CASCADE, blank=True, null=True)
     class Meta:
         ordering = ['name','createdBy']
 

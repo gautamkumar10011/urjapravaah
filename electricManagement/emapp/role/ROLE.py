@@ -26,7 +26,7 @@ def isValidOperation(roleKey, opertationType, username):
     elif KEY_STATION ==roleKey:
         return isUserAllowedForOperation(roleId.station, opertationType)                  
     elif KEY_SCHEDULE ==roleKey:
-        return isUserAllowedForOperation(roleId.schdule, opertationType)
+        return isUserAllowedForOperation(roleId.schedule, opertationType)
     elif KEY_ROLE ==roleKey:
         return isUserAllowedForOperation(roleId.role, opertationType)    
     elif KEY_USER ==roleKey:

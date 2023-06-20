@@ -18,17 +18,21 @@ from accounts.models import User
 from emapp.schedule.models import ScheduleModel
 from emapp.schedule.serializers import ScheduleSerializer
 from emapp.role import ROLE
-
+from emapp.feeder.models import FeederModel
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def get_schedule(request):
-    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULLE, ROLE.KEY_READ, request.user.username):
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULE, ROLE.KEY_READ, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         seq_num =  request.GET['seq_num']
-        result = ScheduleSerializer(ScheduleModel.objects.get(seq_num=seq_num)).data
+        data = ScheduleModel.objects.get(seq_num=seq_num)
+        result = ScheduleSerializer(data).data
+        result['feeder'] = None
+        if FeederModel.objects.filter(seq_num=result['feederId']).exists():
+            result['feederId'] = FeederModel.objects.get(seq_num=result['feederId']).name
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"errMessage": str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -38,9 +42,16 @@ def get_schedule(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def get_schedules(request):
-    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULLE, ROLE.KEY_READ, request.user.username):
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULE, ROLE.KEY_READ, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-    result = ScheduleSerializer(ScheduleModel.objects.all(),many=True).data
+    records = ScheduleModel.objects.all()
+    result = list()
+    for record in records:
+        serialized_record = ScheduleSerializer(record).data
+        serialized_record['feeder'] = None
+        if FeederModel.objects.filter(seq_num=serialized_record['feederId']).exists():
+            serialized_record['feederId'] = FeederModel.objects.get(seq_num=serialized_record['feederId']).name        
+        result.append(serialized_record)
     return Response(result, status=status.HTTP_200_OK)
 
 
@@ -48,13 +59,18 @@ def get_schedules(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def create_schedule(request):
-    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULLE, ROLE.KEY_CREATE, request.user.username):
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULE, ROLE.KEY_CREATE, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         username = request.user.username
         user = User.objects.get(username=username)
         payload = json.loads(request.body.decode())
-        saved_data = ScheduleModel.objects.create(createdBy=user, **payload)
+        feeder_id = payload['feederId']
+        feeder = None 
+        if FeederModel.objects.filter(seq_num=feeder_id).exist():
+            feeder = FeederModel.objects.get(seq_num=feeder_id)
+        if 'feederId' in payload: del payload['feederId']
+        saved_data = ScheduleModel.objects.create(createdBy=user, feederId= feeder, **payload)
         result = ScheduleSerializer(ScheduleModel.objects.get(seq_num=saved_data.seq_num)).data
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
@@ -65,12 +81,17 @@ def create_schedule(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def update_schedule(request):
-    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULLE, ROLE.KEY_UPDATE, request.user.username):
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULE, ROLE.KEY_UPDATE, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         payload = json.loads(request.body.decode())
         if 'createdBy' in payload: del payload['createdBy']
-        ScheduleModel.objects.filter(seq_num=payload['seq_num']).update(**payload)
+        feeder_id = payload['feederId']
+        feeder = None 
+        if FeederModel.objects.filter(seq_num=feeder_id).exist():
+            feeder = FeederModel.objects.get(seq_num=feeder_id)
+        if 'feederId' in payload: del payload['feederId']        
+        ScheduleModel.objects.filter(seq_num=payload['seq_num']).update(feederId=feeder, **payload)
         result = ScheduleSerializer(ScheduleModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
@@ -81,7 +102,7 @@ def update_schedule(request):
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
 def delete_schedule(request):
-    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULLE, ROLE.KEY_DELETE, request.user.username):
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULE, ROLE.KEY_DELETE, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         seq_num = request.GET['seq_num']
@@ -97,9 +118,15 @@ def delete_schedule(request):
 @permission_classes([IsAuthenticated])
 def get_schedule_by_date(request):
     dateOn = request.GET.get('dateOn')
-    result = ScheduleModel.objects.filter(dateOn=dateOn)
-    finalResult = ScheduleSerializer(result, many=True).data
-    return Response(finalResult, status=status.HTTP_200_OK)
+    records = ScheduleModel.objects.filter(dateOn=dateOn)
+    result = list()
+    for record in records:
+        serialized_record = ScheduleSerializer(record).data
+        serialized_record['feeder'] = None
+        if FeederModel.objects.filter(seq_num=serialized_record['feederId']).exists():
+            serialized_record['feeder'] = FeederModel.objects.get(seq_num=serialized_record['feederId']).name
+        result.append(serialized_record)
+    return Response(result, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -108,6 +135,12 @@ def get_schedule_by_date(request):
 def get_schedule_date_range(request):
     dateFrom = request.GET.get('dateFrom')
     dateTo = request.GET.get('dateTo')
-    result = ScheduleModel.objects.filter(dateOn__range=[dateFrom,dateTo])
-    finalResult = ScheduleSerializer(result, many=True).data
-    return Response(finalResult, status=status.HTTP_200_OK)
+    records = ScheduleModel.objects.filter(dateOn__range=[dateFrom,dateTo])
+    result = list()
+    for record in records:
+        serialized_record = ScheduleSerializer(record).data
+        serialized_record['feeder'] = None
+        if FeederModel.objects.filter(seq_num=serialized_record['feederId']).exists():
+            serialized_record['feeder'] = FeederModel.objects.get(seq_num=serialized_record['feederId']).name
+        result.append(serialized_record)    
+    return Response(result, status=status.HTTP_200_OK)
