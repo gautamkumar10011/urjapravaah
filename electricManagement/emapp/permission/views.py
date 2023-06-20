@@ -20,6 +20,7 @@ from emapp.permission.serializers import UserFeederSerializer
 from emapp.feeder.models import FeederModel
 from emapp.role import ROLE
 from emapp.role.views import isUserAdmin
+from django.db.models import Q
 
 
 @api_view(['POST'])
@@ -78,6 +79,20 @@ def feeder_mapping(request):
         return Response(result,status=status.HTTP_200_OK) 
     except Exception as e:
         return Response({"errMessage": str(e), "result":None}, status=status.HTTP_400_BAD_REQUEST)         
+
+
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
+@permission_classes([IsAuthenticated])
+def fetch_user(request):
+    allUsers = User.objects.filter(~Q(username=request.user.username))
+    result = list()
+    for  user in allUsers:
+        result.append({
+            "userId":user.id,
+            "username":user.username
+        })
+    return Response(result,status=status.HTTP_200_OK)    
 
 
 def fetch_user_feeder(userId, user1):
