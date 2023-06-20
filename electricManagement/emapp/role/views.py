@@ -70,7 +70,8 @@ def create_role(request):
         station=CRUDModel.objects.get(value=payload['station']),
         schedule=CRUDModel.objects.get(value=payload['schedule']),
         role=CRUDModel.objects.get(value=payload['role']),
-        urjauser=CRUDModel.objects.get(value=payload['urjauser']))
+        urjauser=CRUDModel.objects.get(value=payload['urjauser']),
+        control_panel=CRUDModel.objects.get(value=payload['control_panel']))
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=saved_data.seq_num)).data
         return Response(result, status=status.HTTP_200_OK)  
     except Exception as e:
@@ -96,7 +97,8 @@ def update_role(request):
         station=CRUDModel.objects.get(value=payload['station']),
         schedule=CRUDModel.objects.get(value=payload['schedule']),
         role=CRUDModel.objects.get(value=payload['role']),
-        urjauser=CRUDModel.objects.get(value=payload['urjauser']))        
+        urjauser=CRUDModel.objects.get(value=payload['urjauser']),
+        control_panel=CRUDModel.objects.get(value=payload['control_panel']))        
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK) 
     except Exception as e:
@@ -144,7 +146,12 @@ def compnent_name(request):
 def isUserAdmin(roleId):
     role = UserRoleModel.objects.get(seq_num=roleId)
     result = UserRoleSerializer(role).data
-    if result['control_panel'] == 15: 
+    if result['control_panel'] == 15 and \
+       result['feeder'] == 15 and \
+       result['station'] == 15 and \
+       result['schedule'] == 15 and \
+       result['role'] == 15 and \
+       result['urjauser'] == 15: 
         return True
     else:
         return False

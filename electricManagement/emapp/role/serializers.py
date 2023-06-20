@@ -46,6 +46,11 @@ class UserRoleSerializer(serializers.ModelSerializer):
 		if obj.urjauser:
 			return OPERATION_DICT[obj.urjauser.operations]
 		return NONE				
+	control_panel = serializers.SerializerMethodField('get_control_panel')
+	def get_control_panel(self, obj):
+		if obj.control_panel:
+			return OPERATION_DICT[obj.control_panel.operations]
+		return NONE		
 
 	class Meta:
 		model = UserRoleModel
@@ -59,6 +64,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
 					"schedule",
 					"role",
 					"urjauser",
+					"control_panel",
 					"views")
 
 class CRUDSerializer(serializers.ModelSerializer):
