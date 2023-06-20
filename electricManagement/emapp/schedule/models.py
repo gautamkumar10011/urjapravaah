@@ -6,7 +6,7 @@ from emapp.feeder.models import FeederModel
 class ScheduleModel(models.Model):
     seq_num = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
-    status = models.CharField(max_length=50)
+    status = models.CharField(max_length=50, default="Scheduled")
     createdBy = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     createdAt = models.DateTimeField(auto_now_add = True)
     dateOn  = models.DateField()

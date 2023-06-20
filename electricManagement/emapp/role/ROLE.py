@@ -4,7 +4,8 @@ KEY_SCHEDULE = "schedule"
 KEY_FEEDER = "feeder"
 KEY_STATION = "station"
 KEY_ROLE = "role"
-KEY_USER = 'user'
+KEY_USER = 'urjauser'
+KEY_PERMISSION = "control_panel"
 
 KEY_READ   = "Read"
 KEY_CREATE = "Create"
@@ -30,7 +31,9 @@ def isValidOperation(roleKey, opertationType, username):
     elif KEY_ROLE ==roleKey:
         return isUserAllowedForOperation(roleId.role, opertationType)    
     elif KEY_USER ==roleKey:
-        return isUserAllowedForOperation(roleId.role, opertationType)                
+        return isUserAllowedForOperation(roleId.urjauser, opertationType) 
+    elif KEY_PERMISSION ==roleKey:
+        return isUserAllowedForOperation(roleId.control_panel, opertationType)                        
     else:
         return False    
 
