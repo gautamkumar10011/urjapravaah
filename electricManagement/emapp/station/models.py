@@ -8,6 +8,7 @@ class StationModel(models.Model):
     name = models.CharField(max_length=50)
     stationManager = models.CharField(max_length=50, default="")
     stationCode = models.CharField(max_length=50, default="")
+    contact = models.CharField(max_length=50, default="")
     createdBy = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     createdAt = models.DateTimeField(auto_now_add = True)
     updatedAt = models.DateTimeField(auto_now_add = True)

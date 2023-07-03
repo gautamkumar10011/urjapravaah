@@ -9,6 +9,7 @@ class FeederModel(models.Model):
     name = models.CharField(max_length=50)
     feederManager = models.CharField(max_length=50, default="")
     feederCode = models.CharField(max_length=50, default="")
+    contact = models.CharField(max_length=50, default="")
     createdBy = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     stationId = models.ForeignKey(StationModel, on_delete=models.CASCADE, blank=True, null=True)
     createdAt = models.DateTimeField(auto_now_add = True)

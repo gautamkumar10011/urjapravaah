@@ -118,7 +118,14 @@ def delete_schedule(request):
 @permission_classes([IsAuthenticated])
 def get_schedule_by_date(request):
     dateOn = request.GET.get('dateOn')
-    records = ScheduleModel.objects.filter(dateOn=dateOn)
+    scheduleType = request.GET.get('scheduleType')
+    if scheduleType == "Scheduled":
+        records = ScheduleModel.objects.filter(status=scheduleType, dateOn=dateOn)
+    elif scheduleType == "Acknowledged":
+        records = ScheduleModel.objects.filter(status=scheduleType, dateOn=dateOn)
+    else:
+        records = ScheduleModel.objects.filter(dateOn=dateOn)
+    
     result = list()
     for record in records:
         serialized_record = ScheduleSerializer(record).data
@@ -135,7 +142,13 @@ def get_schedule_by_date(request):
 def get_schedule_date_range(request):
     dateFrom = request.GET.get('dateFrom')
     dateTo = request.GET.get('dateTo')
-    records = ScheduleModel.objects.filter(dateOn__range=[dateFrom,dateTo])
+    scheduleType = request.GET.get('scheduleType')
+    if scheduleType == "Scheduled":
+        records = ScheduleModel.objects.filter(status=scheduleType, dateOn__range=[dateFrom,dateTo])
+    elif scheduleType == "Acknowledged":
+        records = ScheduleModel.objects.filter(status=scheduleType, dateOn__range=[dateFrom,dateTo])
+    else:    
+        records = ScheduleModel.objects.filter(dateOn__range=[dateFrom,dateTo])
     result = list()
     for record in records:
         serialized_record = ScheduleSerializer(record).data
