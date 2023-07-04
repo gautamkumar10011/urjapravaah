@@ -140,3 +140,55 @@ def delete_station(request):
         return Response({"errMessage":str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
+@permission_classes([IsAuthenticated])
+def upload_file(request):
+    try:
+        createdBy = User.objects.get(username=request.user.username)
+        csv_file = request.FILES["csv_file"]
+        if not csv_file.name.endswith('.csv'):
+            return Response({"errMessage":"File should be csv."}, status=status.HTTP_400_BAD_REQUEST)
+        if csv_file.multiple_chunks():
+            message = "Uploaded file is too big (%.2f MB)." % (csv_file.size/(1000*1000))
+            return Response({"errMessage": message}, status=status.HTTP_400_BAD_REQUEST)
+
+        file_data = csv_file.read().decode("utf-8")	
+        lines = file_data.split("\n")
+        first_line = 0
+        for line in lines:
+            try:
+                if first_line != 0:
+                    print(line)
+                    fields = line.split(",")
+                    print(len(fields))
+                    ## Station ##
+                    if not StationModel.objects.filter(name=fields[6]).exists():
+                        name = fields[6]
+                        stationManager = fields[12]
+                        stationCode = fields[6]
+                        contact = fields[15]
+                        latitude = float(fields[9].replace("\"",''))
+                        longitude = float(fields[10].replace("\"",''))
+                        email = fields[14]
+                        capacity = fields[7]
+                        StationModel.objects.create(name=name, stationManager=stationManager, stationCode=stationCode,
+                            contact=contact, latitude=latitude, longitude=longitude, email=email, createdBy=createdBy, capacity=capacity)
+                    
+                    ### Feeder ###
+                    stationId = StationModel.objects.get(name=fields[6])
+                    name = fields[16]
+                    feederManager = fields[12]
+                    feederCode = fields[16]
+                    contact = fields[15]
+                    latitude = float(fields[9].replace("\"",''))
+                    longitude = float(fields[10].replace("\"",''))
+                    feederType = fields[17]
+                    FeederModel.objects.create(name=name,feederManager=feederManager, feederCode=feederCode, contact=contact,
+                    stationId=stationId, latitude=latitude, longitude=longitude, createdBy=createdBy, feederType=feederType)
+            except Exception as e:
+                return Response({"errMessage":str(e)},status=status.HTTP_400_BAD_REQUEST)        
+            first_line += 1
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        return Response({"errMessage":str(e)},status=status.HTTP_400_BAD_REQUEST)

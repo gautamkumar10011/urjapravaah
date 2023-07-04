@@ -16,7 +16,7 @@ class FeederModel(models.Model):
     updatedAt = models.DateTimeField(auto_now_add = True)
     latitude = models.FloatField(default=0.0)
     longitude = models.FloatField(default=0.0)
-
+    feederType = models.CharField(max_length=64, default="")
     class Meta:
         ordering = ['name','createdBy']
 
