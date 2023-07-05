@@ -38,6 +38,7 @@ class UserRoleModel(models.Model):
     role = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='role', null=True, blank=True)
     urjauser = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='urjauser', null=True, blank=True)
     control_panel = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='control_panel', null=True, blank=True)
+    group = models.ForeignKey(CRUDModel, on_delete=models.SET_NULL,related_name='group', null=True, blank=True)
     views = models.JSONField(blank=True, null=True)
 
     class Meta:

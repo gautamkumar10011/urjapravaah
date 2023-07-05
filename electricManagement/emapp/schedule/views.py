@@ -19,6 +19,8 @@ from emapp.schedule.models import ScheduleModel
 from emapp.schedule.serializers import ScheduleSerializer
 from emapp.role import ROLE
 from emapp.feeder.models import FeederModel
+from emapp.sms_n_notification.send_email import send_email_to_station
+
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
@@ -67,8 +69,9 @@ def create_schedule(request):
         payload = json.loads(request.body.decode())
         feeder_id = payload['feederId']
         feeder = None 
-        if FeederModel.objects.filter(seq_num=feeder_id).exist():
+        if FeederModel.objects.filter(seq_num=feeder_id).exists():
             feeder = FeederModel.objects.get(seq_num=feeder_id)
+            send_email_to_station(feeder, payload)
         if 'feederId' in payload: del payload['feederId']
         saved_data = ScheduleModel.objects.create(createdBy=user, feederId= feeder, **payload)
         result = ScheduleSerializer(ScheduleModel.objects.get(seq_num=saved_data.seq_num)).data

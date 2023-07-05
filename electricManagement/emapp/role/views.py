@@ -71,7 +71,8 @@ def create_role(request):
         schedule=CRUDModel.objects.get(value=payload['schedule']),
         role=CRUDModel.objects.get(value=payload['role']),
         urjauser=CRUDModel.objects.get(value=payload['urjauser']),
-        control_panel=CRUDModel.objects.get(value=payload['control_panel']))
+        control_panel=CRUDModel.objects.get(value=payload['control_panel'])
+        group=CRUDModel.objects.get(value=payload['group']))
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=saved_data.seq_num)).data
         return Response(result, status=status.HTTP_200_OK)  
     except Exception as e:
@@ -98,7 +99,8 @@ def update_role(request):
         schedule=CRUDModel.objects.get(value=payload['schedule']),
         role=CRUDModel.objects.get(value=payload['role']),
         urjauser=CRUDModel.objects.get(value=payload['urjauser']),
-        control_panel=CRUDModel.objects.get(value=payload['control_panel']))        
+        control_panel=CRUDModel.objects.get(value=payload['control_panel']),
+        group=CRUDModel.objects.get(value=payload['group']))        
         result = UserRoleSerializer(UserRoleModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK) 
     except Exception as e:

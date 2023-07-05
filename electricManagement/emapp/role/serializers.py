@@ -50,7 +50,12 @@ class UserRoleSerializer(serializers.ModelSerializer):
 	def get_control_panel(self, obj):
 		if obj.control_panel:
 			return OPERATION_DICT[obj.control_panel.operations]
-		return NONE		
+		return NONE	
+	group = serializers.SerializerMethodField('get_group')
+	def get_group(self, obj):
+		if obj.group:
+			return OPERATION_DICT[obj.group.operations]
+		return NONE				
 
 	class Meta:
 		model = UserRoleModel
@@ -65,6 +70,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
 					"role",
 					"urjauser",
 					"control_panel",
+					"group"
 					"views")
 
 class CRUDSerializer(serializers.ModelSerializer):
