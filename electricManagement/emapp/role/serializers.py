@@ -70,7 +70,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
 					"role",
 					"urjauser",
 					"control_panel",
-					"group"
+					"group",
 					"views")
 
 class CRUDSerializer(serializers.ModelSerializer):

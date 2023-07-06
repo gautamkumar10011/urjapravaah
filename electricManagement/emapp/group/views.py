@@ -17,12 +17,13 @@ from rest_framework.status import (
 from accounts.models import User
 from emapp.role import ROLE
 from emapp.group.models import GroupModel
+from emapp.group.serializers import GroupSerializer
 
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
-def get_station(request):
+def get_group(request):
     if not ROLE.isValidOperation(ROLE.KEY_GROUP, ROLE.KEY_READ, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
@@ -38,13 +39,13 @@ def get_station(request):
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
-def get_stations(request):
+def get_groups(request):
     if not ROLE.isValidOperation(ROLE.KEY_GROUP, ROLE.KEY_READ, request.user.username):
         return Respnse(status=status.HTTP_401_UNAUTHORIZED)
     allRecords = GroupModel.objects.all()
     result = list()
     for record in allRecords:
-        serialized_record = StationSerializer(record).data
+        serialized_record = GroupSerializer(record).data
         serialized_record['username'] = User.objects.get(id = serialized_record['createdBy']).username       
         result.append(serialized_record)
     return Response(result, status=status.HTTP_200_OK)
@@ -53,7 +54,7 @@ def get_stations(request):
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
-def create_station(request):
+def create_group(request):
     if not ROLE.isValidOperation(ROLE.KEY_GROUP, ROLE.KEY_CREATE, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
@@ -61,7 +62,7 @@ def create_station(request):
         user = User.objects.get(username=username)
         payload = json.loads(request.body.decode())
         saved_data = GroupModel.objects.create(createdBy=user, **payload)
-        result = GroupSerializer(StationModel.objects.get(seq_num=saved_data.seq_num)).data
+        result = GroupSerializer(GroupModel.objects.get(seq_num=saved_data.seq_num)).data
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"errMessage":str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -70,13 +71,13 @@ def create_station(request):
 @api_view(['PUT'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
-def update_station(request):
+def update_group(request):
     if not ROLE.isValidOperation(ROLE.KEY_GROUP, ROLE.KEY_UPDATE, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
         payload = json.loads(request.body.decode())
         GroupModel.objects.filter(seq_num=payload['seq_num']).update( **payload)
-        result = GroupSerializer(StationModel.objects.get(seq_num=payload['seq_num'])).data
+        result = GroupSerializer(GroupModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"errMessage":str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -85,7 +86,7 @@ def update_station(request):
 @api_view(['DELETE'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
-def delete_station(request):
+def delete_group(request):
     if not ROLE.isValidOperation(ROLE.KEY_GROUP, ROLE.KEY_DELETE, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
