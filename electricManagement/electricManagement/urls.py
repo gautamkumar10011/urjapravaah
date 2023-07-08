@@ -36,5 +36,6 @@ urlpatterns = [
     path('feeder/station/mappings/', include('emapp.feederStationMapping.urls')),
     path('schedules/', include('emapp.schedule.urls')),
     path('stations/', include('emapp.station.urls')),
+    path('groups/', include('emapp.group.urls')),
 ]
 urlpatterns  +=  static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

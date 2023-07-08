@@ -6,6 +6,7 @@ KEY_STATION = "station"
 KEY_ROLE = "role"
 KEY_USER = 'urjauser'
 KEY_PERMISSION = "control_panel"
+KEY_GROUP = 'group'
 
 KEY_READ   = "Read"
 KEY_CREATE = "Create"
@@ -33,7 +34,9 @@ def isValidOperation(roleKey, opertationType, username):
     elif KEY_USER ==roleKey:
         return isUserAllowedForOperation(roleId.urjauser, opertationType) 
     elif KEY_PERMISSION ==roleKey:
-        return isUserAllowedForOperation(roleId.control_panel, opertationType)                        
+        return isUserAllowedForOperation(roleId.control_panel, opertationType)
+    elif KEY_GROUP ==roleKey:
+        return isUserAllowedForOperation(roleId.group, opertationType)          
     else:
         return False    
 
