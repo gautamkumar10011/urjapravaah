@@ -20,6 +20,7 @@ from emapp.schedule.serializers import ScheduleSerializer
 from emapp.role import ROLE
 from emapp.feeder.models import FeederModel
 from emapp.sms_n_notification.send_email import send_email_to_station
+from emapp.sms_n_notification.fcm_manager import send_notification
 
 
 @api_view(['GET'])
@@ -75,6 +76,7 @@ def create_schedule(request):
         if 'feederId' in payload: del payload['feederId']
         saved_data = ScheduleModel.objects.create(createdBy=user, feederId= feeder, **payload)
         result = ScheduleSerializer(ScheduleModel.objects.get(seq_num=saved_data.seq_num)).data
+        send_notification(feeder, payload, saved_data)
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"errMessage": str(e)}, status=status.HTTP_400_BAD_REQUEST)
