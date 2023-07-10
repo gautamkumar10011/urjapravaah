@@ -1,3 +1,5 @@
+import django
+django.setup()
 import json
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -21,7 +23,10 @@ from emapp.role import ROLE
 from emapp.feeder.models import FeederModel
 from emapp.sms_n_notification.send_email import send_email_to_station
 from emapp.sms_n_notification.fcm_manager import send_notification
-
+from django.views.decorators.csrf import csrf_exempt
+from multiprocessing import Process
+from emapp.group.models import GroupModel
+from emapp.permission.models import GroupFeeder
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
@@ -57,7 +62,6 @@ def get_schedules(request):
         result.append(serialized_record)
     return Response(result, status=status.HTTP_200_OK)
 
-
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
@@ -69,17 +73,43 @@ def create_schedule(request):
         user = User.objects.get(username=username)
         payload = json.loads(request.body.decode())
         feeder_id = payload['feederId']
-        feeder = None 
-        if FeederModel.objects.filter(seq_num=feeder_id).exists():
-            feeder = FeederModel.objects.get(seq_num=feeder_id)
-            send_email_to_station(feeder, payload)
+        feeder = FeederModel.objects.get(seq_num=feeder_id)
         if 'feederId' in payload: del payload['feederId']
         saved_data = ScheduleModel.objects.create(createdBy=user, feederId= feeder, **payload)
         result = ScheduleSerializer(ScheduleModel.objects.get(seq_num=saved_data.seq_num)).data
-        send_notification(feeder, payload, saved_data)
+
+        bgprocess1 = Process(target=send_email_to_station, args=( feeder, payload,))
+        bgprocess1.start()
+        bgprocess = Process(target=send_notification, args=( feeder, payload, saved_data))
+        bgprocess.start()
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"errMessage": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['POST'])
+@authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
+@permission_classes([IsAuthenticated])
+def schedule_group(request):
+    if not ROLE.isValidOperation(ROLE.KEY_SCHEDULE, ROLE.KEY_CREATE, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)    
+    try:
+        username = request.user.username
+        user = User.objects.get(username=username)
+        payload = json.loads(request.body.decode())
+        group = GroupModel.objects.get(seq_num=payload['groupId'])
+        groupFeeders = GroupFeeder.objects.filter(groupId=group)
+        del payload['groupId']
+        for groupFeeder in groupFeeders:
+            saved_data = ScheduleModel.objects.create(createdBy=user, feederId= groupFeeder.feederId, **payload)
+            bgprocess1 = Process(target=send_email_to_station, args=( groupFeeder.feederId, payload,))
+            bgprocess = Process(target=send_notification, args=( groupFeeder.feederId, payload, saved_data))
+            bgprocess1.start()
+            bgprocess.start()            
+        return Response(status=status.HTTP_201_CREATED) 
+    except Exception as e:
+        return Response({"errMessage":str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['PUT'])
@@ -162,3 +192,4 @@ def get_schedule_date_range(request):
             serialized_record['feeder'] = FeederModel.objects.get(seq_num=serialized_record['feederId']).name
         result.append(serialized_record)    
     return Response(result, status=status.HTTP_200_OK)
+

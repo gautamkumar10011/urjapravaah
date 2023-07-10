@@ -22,8 +22,9 @@ from emapp.permission.models import UserFeeder
 from datetime import datetime, timedelta
 from emapp.dashboard.hoursMinsConstants import HOURS
 from emapp.dashboard.hoursMinsConstants import MINS
+from django.db.models import Q
 
-DAYS_INTERVAAL=7
+DAYS_INTERVAL=15
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
@@ -32,12 +33,12 @@ def get_dashboard(request):
     try:
         username = request.user.username
         user = User.objects.get(username=username)
-        totalFeeder = UserFeeder.objects.filter(userId=user).count()
-        totatStation = get_total_station(user)
-        totalSchedule = get_total_schedule(user)
-        totalPending = get_total_scheduled(user)
+        userFeeders = UserFeeder.objects.filter(userId=user)
+        totalFeeder, totatStation = get_total_station(user, userFeeders)
+        totalSchedule = get_total_schedule(user, userFeeders)
+        totalPending = get_total_scheduled(user, userFeeders)
         totalAcknowledged = totalSchedule - totalPending
-        #graphData = get_graph_data(user)
+        graphData = get_graph_data1(user, userFeeders)
         # [{"day":"2023-06-08", "total_time":4},
         # {"day":"2023-06-9", "total_time": 3},
         # {"day":"2023-06-10", "total_time": 4},
@@ -59,44 +60,35 @@ def get_dashboard(request):
         result['totalSchedule'] = totalSchedule
         result['totalPending'] = totalPending
         result['totalAcknowledged'] = totalAcknowledged
-        result['graphData'] = {}#graphData
+        result['graphData'] = graphData
         return Response(result, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"errMessage":str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 
-def get_total_station(user):
-    userFeeders = UserFeeder.objects.filter(userId=user)
-    result = list()
-    feederMap = dict()
-    for userFeeder in userFeeders:
-        if userFeeder.feederId.stationId not in feederMap:
-            result.append(
-                userFeeder.feederId.stationId
-            )
-            feederMap[userFeeder.feederId.stationId] = True
-    return len(result)
+def get_total_station(user, UserFeeders):
+    user_feeders = UserFeeder.objects.filter(userId=user).values_list('feederId__stationId', flat=True)
+    unique_stations = set(user_feeders)
+    return len(user_feeders), len(unique_stations)
 
-
-def get_total_schedule(user):
-    userFeeders = UserFeeder.objects.filter(userId=user)
-    records = ScheduleModel.objects.none()
-    for userFeeder in userFeeders:
-        records |= ScheduleModel.objects.filter(dateOn__gte=datetime.now(), feederId=userFeeder.feederId)
+def get_total_schedule(user, userFeeders):
+    records = ScheduleModel.objects.filter(
+        dateOn__gte=datetime.now(),
+        feederId__in=[userFeeder.feederId for userFeeder in userFeeders]
+    )
     return records.count()
 
-def get_total_scheduled(user):
-    userFeeders = UserFeeder.objects.filter(userId=user)
-    records = ScheduleModel.objects.none()
-    for userFeeder in userFeeders:
-        records |= ScheduleModel.objects.filter(dateOn__gte=datetime.now(), feederId=userFeeder.feederId, status="Scheduled")
+def get_total_scheduled(user, userFeeders):
+    records = ScheduleModel.objects.filter(
+        Q(dateOn__gte=datetime.now()) & Q(feederId__in=[userFeeder.feederId for userFeeder in userFeeders]) & Q(status="Scheduled")
+    )
     return records.count()
 
-def get_graph_data(user):
+def get_graph_data(user, userFeeders):
     result = list()
-    userFeeders = UserFeeder.objects.filter(userId=user)
     records = ScheduleModel.objects.none()
-    for i in range(DAYS_INTERVAAL):
+    for i in range(DAYS_INTERVAL):
+        total_time = 0
         for userFeeder in userFeeders:
             records |= ScheduleModel.objects.filter(dateOn=datetime.today() - timedelta(days=i), feederId=userFeeder.feederId)
         total_time = 0
@@ -108,3 +100,30 @@ def get_graph_data(user):
             })
         records = ScheduleModel.objects.none()
     return result
+
+def get_graph_data1(user, userFeeders):
+    result = []
+    user_feeders = userFeeders
+    records = ScheduleModel.objects.none()
+
+    for i in range(DAYS_INTERVAL):
+        date_on = datetime.today() - timedelta(days=i)
+        records = ScheduleModel.objects.filter(dateOn=date_on, feederId__in=user_feeders.values_list('feederId', flat=True))
+
+        total_time = 0
+        for record in records:
+            time_from = (HOURS[record.timeFrom[0:2]] * 60 + MINS[record.timeFrom[3:]])
+            time_to = (HOURS[record.timeTo[0:2]] * 60 + MINS[record.timeTo[3:]])
+            total_time += (time_to - time_from) / 60
+
+        result.append({
+            "day": date_on.strftime('%Y-%m-%d'),
+            "total_time": total_time
+        })
+    return result
+
+def get_graph_data2(user, userFeeders):
+    result = []
+    fifteen_days_ago = date.today() - timedelta(days=15)
+    schedules = ScheduleModel.objects.filter(dateOn__gte=fifteen_days_ago, feederId__in=userFeeders)
+

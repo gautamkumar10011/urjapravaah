@@ -19,6 +19,7 @@ from emapp.feeder.models import FeederModel
 from emapp.feeder.serializers import FeederSerializer
 from emapp.role import ROLE
 from emapp.station.models import StationModel
+from emapp.permission.models import UserFeeder
 
 
 @api_view(['GET'])
@@ -46,17 +47,10 @@ def get_feeder(request):
 def get_feeders(request):
     if not ROLE.isValidOperation(ROLE.KEY_FEEDER, ROLE.KEY_READ, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
-    allRecords = FeederModel.objects.all()
-    finalResult = list()
-    for record in allRecords:
-        result = FeederSerializer(record).data
-        result['station'] = None
-        if StationModel.objects.filter(seq_num=result['stationId']).exists():
-            result['station'] = StationModel.objects.get(seq_num=result['stationId']).name        
-        result['username'] = User.objects.get(id=result['createdBy']).username
-        finalResult.append(result)
-    return Response(finalResult, status=status.HTTP_200_OK)
-
+    user_feeders = UserFeeder.objects.filter(userId=request.user)
+    feeders = FeederModel.objects.filter(userfeeder__in=user_feeders)
+    serializer = FeederSerializer(feeders, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
@@ -71,7 +65,7 @@ def create_feeder(request):
         stationId = None
         if StationModel.objects.filter(seq_num=payload['stationId']).exists():
             stationId =StationModel.objects.get(seq_num=payload['stationId'])
-        del payload['stationId']                 
+        del payload['stationId']
         saved_data = FeederModel.objects.create(createdBy=user, stationId=stationId, **payload)
         result = FeederSerializer(FeederModel.objects.get(seq_num=saved_data.seq_num)).data
         return Response(result, status=status.HTTP_200_OK)
@@ -90,7 +84,7 @@ def update_feeder(request):
         stationId = None
         if StationModel.objects.filter(seq_num=payload['stationId']).exists():
             stationId =StationModel.objects.get(seq_num=payload['stationId'])
-        del payload['stationId']                 
+        del payload['stationId']
         FeederModel.objects.filter(seq_num=payload['seq_num']).update( **payload)
         result = FeederSerializer(FeederModel.objects.get(seq_num=payload['seq_num'])).data
         return Response(result, status=status.HTTP_200_OK)

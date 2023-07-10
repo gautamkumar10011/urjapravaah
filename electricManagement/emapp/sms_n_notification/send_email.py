@@ -1,3 +1,5 @@
+import django
+django.setup()
 from django.core.mail import send_mail
 from django.conf import settings
 from emapp.station.models import StationModel

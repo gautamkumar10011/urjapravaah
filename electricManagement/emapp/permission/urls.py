@@ -13,5 +13,6 @@ urlpatterns = [
 	url(r'^delete/group$',groupViews.delete_permissions, name='delete_permissions'),
 	url(r'^group/mapping$',groupViews.group_feeder_mapping, name='group_feeder_mapping'),
 	url(r'^fetch/group$',groupViews.fetch_group, name='fetch_group'),
+	url(r'^fetch/group/feeder$',groupViews.group_feeder_mapping_only, name='group_feeder_mapping_only'),
 	
 ]
