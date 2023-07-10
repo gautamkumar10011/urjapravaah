@@ -93,6 +93,19 @@ def fetch_group(request):
         })
     return Response(result,status=status.HTTP_200_OK)    
 
+@api_view(['GET'])
+@authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
+@permission_classes([IsAuthenticated])
+def group_feeder_mapping_only(request):   
+    if not ROLE.isValidOperation(ROLE.KEY_PERMISSION, ROLE.KEY_READ, request.user.username):
+        return Response(status=status.HTTP_401_UNAUTHORIZED)      
+    try:
+        user = User.objects.get(username=request.user.username)
+        groupId = int(request.GET['groupId'])
+        result = fetch_only_group_feeder_mapped(groupId)
+        return Response(result,status=status.HTTP_200_OK) 
+    except Exception as e:
+        return Response({"errMessage": str(e), "result":None}, status=status.HTTP_400_BAD_REQUEST)
 
 def fetch_group_feeder(groupId):
     group = GroupModel.objects.get(seq_num=groupId)
@@ -125,3 +138,21 @@ def fetch_group_feeder(groupId):
     return result
 
 
+def fetch_only_group_feeder_mapped(groupId):
+    group = GroupModel.objects.get(seq_num=groupId)
+    groupFeeders = GroupFeeder.objects.filter(groupId=group)
+    result = list()
+    feederMap = dict()
+    for groupFeeder in groupFeeders:
+        if groupFeeder.feederId.seq_num not in feederMap:
+            result.append({
+                "groupId" : groupId,
+                "groupName": group.name,
+                "feederId": groupFeeder.feederId.seq_num,
+                "feederName": groupFeeder.feederId.name,
+                "hasMapping":True
+            }
+            )
+            feederMap[groupFeeder.feederId.seq_num] = True
+
+    return result

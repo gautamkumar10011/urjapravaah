@@ -1,3 +1,5 @@
+import django
+django.setup()
 import firebase_admin
 from firebase_admin import credentials, messaging , auth
 from accounts.models import User

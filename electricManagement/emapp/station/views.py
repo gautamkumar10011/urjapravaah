@@ -72,25 +72,11 @@ def get_stations(request):
     if not ROLE.isValidOperation(ROLE.KEY_STATION, ROLE.KEY_READ, request.user.username):
         return Respnse(status=status.HTTP_401_UNAUTHORIZED)
     user = User.objects.get(username=request.user.username)
-    userFeeders = UserFeeder.objects.filter(userId=user)
-    result = list()
-    feederMap = dict()
-    for userFeeder in userFeeders:
-        if userFeeder.feederId.stationId not in feederMap:
-            result.append(
-                userFeeder.feederId.stationId
-            )
-            feederMap[userFeeder.feederId.stationId] = True
 
-    allRecords = StationModel.objects.none()
-    for stationId in result:
-        allRecords |= StationModel.objects.filter(seq_num=stationId.seq_num)
-    
-    result = list()
-    for record in allRecords:
-        serialized_record = StationSerializer(record).data
-        serialized_record['username'] = User.objects.get(id = serialized_record['createdBy']).username       
-        result.append(serialized_record)
+    user_feeders = UserFeeder.objects.filter(userId=user).values_list('feederId__stationId', flat=True)
+    unique_stations = set(user_feeders)
+    stations = StationModel.objects.filter(seq_num__in=unique_stations)
+    result = StationSerializer(stations, many=True).data
     return Response(result, status=status.HTTP_200_OK)
 
 
@@ -140,6 +126,7 @@ def delete_station(request):
         return Response({"errMessage":str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 @api_view(['POST'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])
@@ -153,7 +140,7 @@ def upload_file(request):
             message = "Uploaded file is too big (%.2f MB)." % (csv_file.size/(1000*1000))
             return Response({"errMessage": message}, status=status.HTTP_400_BAD_REQUEST)
 
-        file_data = csv_file.read().decode("utf-8")	
+        file_data = csv_file.read().decode("utf-8")
         lines = file_data.split("\n")
         first_line = 0
         for line in lines:
@@ -174,7 +161,7 @@ def upload_file(request):
                         capacity = fields[7]
                         StationModel.objects.create(name=name, stationManager=stationManager, stationCode=stationCode,
                             contact=contact, latitude=latitude, longitude=longitude, email=email, createdBy=createdBy, capacity=capacity)
-                    
+
                     ### Feeder ###
                     stationId = StationModel.objects.get(name=fields[6])
                     name = fields[16]
@@ -187,7 +174,7 @@ def upload_file(request):
                     FeederModel.objects.create(name=name,feederManager=feederManager, feederCode=feederCode, contact=contact,
                     stationId=stationId, latitude=latitude, longitude=longitude, createdBy=createdBy, feederType=feederType)
             except Exception as e:
-                return Response({"errMessage":str(e)},status=status.HTTP_400_BAD_REQUEST)        
+                return Response({"errMessage":str(e)},status=status.HTTP_400_BAD_REQUEST)
             first_line += 1
         return Response(status=status.HTTP_204_NO_CONTENT)
     except Exception as e:
