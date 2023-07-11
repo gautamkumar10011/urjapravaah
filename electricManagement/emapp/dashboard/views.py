@@ -90,7 +90,7 @@ def get_graph_data(user, userFeeders):
     for i in range(DAYS_INTERVAL):
         total_time = 0
         for userFeeder in userFeeders:
-            records |= ScheduleModel.objects.filter(dateOn=datetime.today() - timedelta(days=i), feederId=userFeeder.feederId)
+            records |= ScheduleModel.objects.filter(dateOn=datetime.today() - timedelta(days=i), feederId=userFeeder.feederId) 
         total_time = 0
         for record in records:
             total_time += ((HOURS[record.timeTo[0:2]]*60 + MINS[record.timeTo[3:]]) - (HOURS[record.timeFrom[0:2]]*60 + MINS[record.timeFrom[3:]]))/60
@@ -123,7 +123,23 @@ def get_graph_data1(user, userFeeders):
     return result
 
 def get_graph_data2(user, userFeeders):
-    result = []
-    fifteen_days_ago = date.today() - timedelta(days=15)
-    schedules = ScheduleModel.objects.filter(dateOn__gte=fifteen_days_ago, feederId__in=userFeeders)
+    
+    result = [{
+        "day": (datetime.today() - timedelta(days=i)).strftime('%Y-%m-%d'),
+        "total_time": 0
+    } for i in range(DAYS_INTERVAL)]
 
+    fifteen_days_ago = datetime.today() - timedelta(days=15)
+    feeder_ids = userFeeders.values_list('feederId', flat=True)
+    schedules = ScheduleModel.objects.filter(dateOn__gte=fifteen_days_ago, feederId__in=feeder_ids)
+    current_date = datetime.today()
+    
+    for schedule in schedules:
+        day_on = (current_date.date() - schedule.dateOn).days 
+        time_from = int(schedule.timeFrom.split(':')[0]) * 60 + int(schedule.timeFrom.split(':')[1])
+        time_to = int(schedule.timeTo.split(':')[0]) * 60 + int(schedule.timeTo.split(':')[1])
+        total_time = (time_to - time_from) / 60
+        result[day_on]['total_time'] += total_time 
+
+    return result
+    
