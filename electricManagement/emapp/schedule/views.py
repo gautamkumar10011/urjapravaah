@@ -28,6 +28,7 @@ from multiprocessing import Process
 from emapp.group.models import GroupModel
 from emapp.permission.models import GroupFeeder
 
+
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
 @permission_classes([IsAuthenticated])

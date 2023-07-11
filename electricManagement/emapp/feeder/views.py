@@ -20,6 +20,7 @@ from emapp.feeder.serializers import FeederSerializer
 from emapp.role import ROLE
 from emapp.station.models import StationModel
 from emapp.permission.models import UserFeeder
+from emapp.role.views import isUserAdmin
 
 
 @api_view(['GET'])
@@ -47,6 +48,12 @@ def get_feeder(request):
 def get_feeders(request):
     if not ROLE.isValidOperation(ROLE.KEY_FEEDER, ROLE.KEY_READ, request.user.username):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+    user = User.objects.get(username=request.user.username)
+    if isUserAdmin(user.roleId.seq_num):
+        feeders = FeederModel.objects.all()
+        result = FeederSerializer(feeders , many=True).data
+        return Response(result, status=status.HTTP_200_OK)
+        
     user_feeders = UserFeeder.objects.filter(userId=request.user)
     feeders = FeederModel.objects.filter(userfeeder__in=user_feeders)
     serializer = FeederSerializer(feeders, many=True)

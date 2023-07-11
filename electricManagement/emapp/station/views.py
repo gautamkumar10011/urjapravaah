@@ -21,7 +21,7 @@ from emapp.role import ROLE
 from emapp.feeder.models import FeederModel
 from emapp.feeder.serializers import FeederSerializer
 from emapp.permission.models import UserFeeder
-
+from emapp.role.views import isUserAdmin
 
 @api_view(['GET'])
 @authentication_classes((SessionAuthentication, TokenAuthentication, BasicAuthentication))
@@ -72,7 +72,10 @@ def get_stations(request):
     if not ROLE.isValidOperation(ROLE.KEY_STATION, ROLE.KEY_READ, request.user.username):
         return Respnse(status=status.HTTP_401_UNAUTHORIZED)
     user = User.objects.get(username=request.user.username)
-
+    if isUserAdmin(user.roleId.seq_num):
+        stations = StationModel.objects.all()
+        result = StationSerializer(stations, many=True).data
+        return Response(result, status=status.HTTP_200_OK)
     user_feeders = UserFeeder.objects.filter(userId=user).values_list('feederId__stationId', flat=True)
     unique_stations = set(user_feeders)
     stations = StationModel.objects.filter(seq_num__in=unique_stations)

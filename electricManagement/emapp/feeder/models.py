@@ -21,4 +21,4 @@ class FeederModel(models.Model):
         ordering = ['name','createdBy']
 
     def __str__(self):
-        return self.name
+        return self.name + "," + str(self.stationId)
