@@ -23,6 +23,7 @@ from datetime import datetime, timedelta
 from emapp.dashboard.hoursMinsConstants import HOURS
 from emapp.dashboard.hoursMinsConstants import MINS
 from django.db.models import Q
+from emapp.role.views import isUserAdmin
 
 DAYS_INTERVAL=15
 
@@ -34,7 +35,11 @@ def get_dashboard(request):
         username = request.user.username
         user = User.objects.get(username=username)
         userFeeders = UserFeeder.objects.filter(userId=user)
-        totalFeeder, totatStation = get_total_station(user, userFeeders)
+        if isUserAdmin(user.roleId.seq_num):
+            totalFeeder = FeederModel.objects.all().count()
+            totatStation = StationModel.objects.all().count()
+        else:
+            totalFeeder, totatStation = get_total_station(user, userFeeders)
         totalSchedule = get_total_schedule(user, userFeeders)
         totalPending = get_total_scheduled(user, userFeeders)
         totalAcknowledged = totalSchedule - totalPending
